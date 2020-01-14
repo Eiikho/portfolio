@@ -1,0 +1,94 @@
+/*
+Theme Name: OceanWP Child
+Theme URI: https://oceanwp.org/
+Template: oceanwp
+Author: Nick
+Author URI: https://oceanwp.org/about-me/
+Description: OceanWP is the perfect theme for your project. Lightweight and highly extendable, it will enable you to create almost any type of website such a blog, portfolio, business website and WooCommerce storefront with a beautiful &amp; professional design. Very fast, responsive, RTL &amp; translation ready, best SEO practices, unique WooCommerce features to increase conversion and much more. You can even edit the settings on tablet &amp; mobile so your site looks good on every device. Work with the most popular page builders as Elementor, Beaver Builder, Brizy, Visual Composer, Divi, SiteOrigin, etc... Developers will love his extensible codebase making it a joy to customize and extend. Best friend of Elementor &amp; WooCommerce. Looking for a Multi-Purpose theme? Look no further! Check the demos to realize that it's the only theme you will ever need: https://oceanwp.org/demos/
+Tags: two-columns,right-sidebar,footer-widgets,blog,news,custom-background,custom-menu,post-formats,rtl-language-support,sticky-post,editor-style,threaded-comments,translation-ready,buddypress,custom-colors,featured-images,full-width-template,theme-options,e-commerce
+Version: 1.7.4.1578997338
+Updated: 2020-01-14 11:22:18
+
+*/
+
+.bounce-up-down {
+	position: absolute;
+	bottom: 30px;
+	left: 50%;
+	width: 60px;
+	height: 60px;
+	margin-left: -30px;
+	animation: bounce 2s infinite;
+	-webkit-animation: bounce 2s infinite;
+	-moz-animation: bounce 2s infinite;
+	-o-animation: bounce 2s infinite;
+}
+
+.bounce-up-down:hover {
+	animation: none;
+	-webkit-animation: none;
+	-moz-animation: none;
+	-o-animation: none;
+}
+
+.icon-menu-color i {
+	transition: 0.2s all ease-in-out;
+}
+
+.icon-menu-color i.current-section {
+	color: #00b0f0;
+}
+
+@-webkit-keyframes bounce {
+	0%, 20%, 50%, 80%, 100% {
+		-webkit-transform: translateY(0);
+	}
+	40% {
+		-webkit-transform: translateY(-30px);
+	}
+	60% {
+		-webkit-transform: translateY(-15px);
+	}
+}
+
+@-moz-keyframes bounce {
+	0%, 20%, 50%, 80%, 100% {
+		-moz-transform: translateY(0);
+	}
+	40% {
+		-moz-transform: translateY(-30px);
+	}
+	60% {
+		-moz-transform: translateY(-15px);
+	}
+}
+
+@-o-keyframes bounce {
+	0%, 20%, 50%, 80%, 100% {
+		-o-transform: translateY(0);
+	}
+	40% {
+		-o-transform: translateY(-30px);
+	}
+	60% {
+		-o-transform: translateY(-15px);
+	}
+}
+
+@keyframes bounce {
+	0%, 20%, 50%, 80%, 100% {
+		transform: translateY(0);
+	}
+	40% {
+		transform: translateY(-30px);
+	}
+	60% {
+		transform: translateY(-15px);
+	}
+}
+
+@media only screen and (max-width: 959px) {
+	body.content-full-screen .elementor-section-wrap>.elementor-section.elementor-section-boxed>.elementor-container {
+		max-width: inherit;
+	}
+}
