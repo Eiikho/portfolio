@@ -87,6 +87,28 @@ Updated: 2020-01-14 11:22:18
 	}
 }
 
+#icon_menu_language {
+	cursor: pointer;
+}
+
+.modal-header, .modal-footer {
+	border: none !important;
+}
+
+.modal-title {
+	color: #4d4d4d;
+	font-size: 25px;
+}
+
+.modal-body a {
+	color: #3399cc;
+	font-size: 30px;
+	transition: 0.2s all ease-in-out;
+}
+.modal-body a img {
+	max-width: 100px;
+}
+
 @media only screen and (max-width: 959px) {
 	body.content-full-screen .elementor-section-wrap>.elementor-section.elementor-section-boxed>.elementor-container {
 		max-width: inherit;
