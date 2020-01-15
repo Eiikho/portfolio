@@ -59,7 +59,7 @@ function my_script_function()
 //shortcode perso
 
 //add_shortcode('increment_dl_count', 'custom_increment_dl_count');
-// Function to increment dl count
+// Function to increment dl count !
 function custom_increment_dl_count($post_id)
 {
     $meta_key = "dl_count";
