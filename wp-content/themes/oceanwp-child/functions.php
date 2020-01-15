@@ -119,7 +119,7 @@ function ma_fonction_function()
     }
    
     // Building HTML
-    foreach($displayble_posts as $d){
+    foreach($a as $d){
         $html .= '<div class="row" style="color:white">';
         $html .= '<div class="col">';
         $html .= 'Titre : '. $d["name"];
