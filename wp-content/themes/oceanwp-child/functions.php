@@ -59,8 +59,88 @@ function my_script_function()
 //shortcode perso
 add_shortcode('ma_fonction', 'ma_fonction_function');
 function ma_fonction_function()
-{
-    return "test";
+{    
+    $selected_category = -1; // Desired category initialisation
+    $categories = get_categories(); // Getting all categories from DB
+    $desired_post = array(); // Array of desired post matching category
+    $posts = get_posts(); // get all posts from DB
+    $displayble_posts = array();
+    
+
+    foreach($categories as $c) // Browse through all categories to find the one called "Jeux"
+    {
+       if($c->name == "Jeux"){
+            $selected_category = $c->cat_ID; // Set the desired category ID from name
+         }
+    }
+    
+    foreach($posts as $p){
+        $current_cat = wp_get_post_categories($p->ID);
+        if($current_cat[0] == $selected_category) // Add the selected post the posts list if matching the desired category
+            $desired_post[] = $p;
+        
+    }
+
+    // Populate an array of data for each game found 
+    foreach($desired_post as $current_post){
+        $info = array( 'name' => $current_post->post_title, 'desc' => $current_post->post_content );
+        $meta = get_post_meta($current_post->ID);
+
+        if(array_key_exists("game_playable", $meta))
+            $info["game_playable"] = $meta["game_playable"][0];
+
+        if(array_key_exists("release_date", $meta))
+            $info["release_date"] = $meta["release_date"][0];
+
+         if(array_key_exists("dev_time", $meta))
+            $info["dev_time"] = $meta["dev_time"][0];
+
+        if(array_key_exists("lifetime", $meta))
+            $info["lifetime"] = $meta["lifetime"][0];
+
+        if(array_key_exists("style", $meta))
+            $info["style"] = $meta["style"][0];
+
+        if(array_key_exists("dl_count", $meta))
+            $info["dl_count"] = $meta["dl_count"][0];
+
+        if(array_key_exists("techno", $meta))
+            $info["techno"] = $meta["techno"][0];
+        
+        if(array_key_exists("movie_path", $meta))
+            $info["movie_path"] = $meta["movie_path"][0];
+
+        if(array_key_exists("image_path", $meta))
+            $info["image_path"] = $meta["image_path"];
+            
+         
+        $displayble_posts[] = $info;
+        
+    }
+   
+    // Building HTML
+    foreach($displayble_posts as $d){
+        $html .= '<div class="row" style="color:white">';
+        $html .= '<div class="col">';
+        $html .= 'Titre : '. $d["name"];
+        $html .= '</br> Description : '. $d['desc'];
+        $html .= '</br> Devices : '. $d['game_playable'];
+        $html .= '</br>Release date : '.$d['release_date'];
+        $html .= '</br>Development time : '.$d['dev_time'];
+        $html .= '</br>Lifetime : '.$d['lifetime'];
+        $html .= '</br>Style : '.$d['style'];
+        $html .= '</br>Download count : '.$d['dl_count'];
+        $html .= '</br>Technology used : '.$d['techno'];
+        $html .= '</br>';
+        foreach($d['image_path'] as $img){
+            $html .= '<img src="http://localhost/remi-adriano/portfolio/wp-content/uploads/2020/01/game-image/'. $img .'"  height="150" width="150">';
+        }        
+        $html .= '</div>';
+        $html .= '</div>';
+    }
+    
+
+    return $html;
 }
 
 //ajax function 
