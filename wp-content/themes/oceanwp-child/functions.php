@@ -58,9 +58,9 @@ function my_script_function()
 
 //shortcode perso
 
-//add_shortcode('increment_dl_count', 'custom_increment_dl_count');
+// add_shortcode('increment_dl_count', 'custom_increment_dl_count');
 // Function to increment dl count !
-function custom_increment_dl_count($post_id)
+function increment_dl_count($post_id)
 {
     $meta_key = "dl_count";
     $post_id = 667; // Comment on passe ce param comme arg de la fonction, du lien ou whatever ??????????????
@@ -69,61 +69,85 @@ function custom_increment_dl_count($post_id)
     update_post_meta($post_id, $meta_key, (String)((int)$dl_count[0] + 1));
 }
 
+
+// get infos for a single game inside DB
+function get_single_game_data($post_id){
+        $logo_id = -1;
+        $p = get_post($post_id);
+
+       // Get all image related to current post
+       $args = array('post_type' => 'attachment', 'post_mime_type' => 'image', 'post_parent' => $p->ID); 
+       $attached_images = get_posts( $args );
+
+       // building data array with selected results
+       $info = array( 'name' => $p->post_title, 'desc' => $p->post_content );
+       $meta = get_post_meta($p->ID);
+
+       if(array_key_exists("game_playable", $meta))
+           $info["game_playable"] = $meta["game_playable"][0];
+
+       if(array_key_exists("release_date", $meta))
+           $info["release_date"] = $meta["release_date"][0];
+
+       if(array_key_exists("dev_time", $meta))
+           $info["dev_time"] = $meta["dev_time"][0];
+
+       if(array_key_exists("lifetime", $meta))
+           $info["lifetime"] = $meta["lifetime"][0];
+
+       if(array_key_exists("style", $meta))
+           $info["style"] = $meta["style"][0];
+
+       if(array_key_exists("dl_count", $meta))
+           $info["dl_count"] = $meta["dl_count"][0];
+
+       if(array_key_exists("techno", $meta))
+           $info["techno"] = $meta["techno"][0];
+       
+       if(array_key_exists("movie_path", $meta))
+           $info["movie_path"] = $meta["movie_path"][0];
+
+        if(array_key_exists("ocean_custom_logo", $meta)){
+            $logo_id = (int)$meta["ocean_custom_logo"][0];
+        }
+
+        // If post has images, this routine checks if one of them is set as the default logo (A.K.A main image). 
+        // If so, this main image is defined in 'logo' when other images are defined in 'image'. 
+
+       if(count($attached_images) > 0){
+           if($logo_id > -1){
+                foreach($attached_images as $img){
+                    if((int)$img->ID == (int)$logo_id){
+                        $info['logo'] = $img;
+                    } else {
+                        $info['image'][] = $img;
+                    }
+                }
+           } else {
+                 $info['image'] = $attached_images;
+           }
+           
+       }
+        return $info;
+}
+
 // Shortcode to get all games data
-add_shortcode('get_games_data', 'custom_get_games_data');
-function custom_get_games_data()
+add_shortcode('shortcode_get_all_games_data', 'get_all_games_data');
+function get_all_games_data()
 {    
     $selected_category = 4; // Desired category initialisation
-    $categories = get_categories(); // Getting all categories from DB
     $posts = get_posts(); // get all posts from DB
-    $displayble_posts = array(); // returned array populated with selected posts    
+    $games = array(); // returned array populated with selected posts    
     
     foreach($posts as $p){
         $current_cat = wp_get_post_categories($p->ID);
-        if($current_cat[0] == $selected_category){ // Add the selected post the posts list if matching the desired category
-            
-            // Get all image related to current post
-            $args = array('post_type' => 'attachment', 'post_mime_type' => 'image', 'post_parent' => $p->ID); 
-            $attached_images = get_posts( $args );
-
-            // building data array with selected results
-            $info = array( 'name' => $p->post_title, 'desc' => $p->post_content );
-            $meta = get_post_meta($p->ID);
-
-            if(array_key_exists("game_playable", $meta))
-                $info["game_playable"] = $meta["game_playable"][0];
-
-            if(array_key_exists("release_date", $meta))
-                $info["release_date"] = $meta["release_date"][0];
-
-            if(array_key_exists("dev_time", $meta))
-                $info["dev_time"] = $meta["dev_time"][0];
-
-            if(array_key_exists("lifetime", $meta))
-                $info["lifetime"] = $meta["lifetime"][0];
-
-            if(array_key_exists("style", $meta))
-                $info["style"] = $meta["style"][0];
-
-            if(array_key_exists("dl_count", $meta))
-                $info["dl_count"] = $meta["dl_count"][0];
-
-            if(array_key_exists("techno", $meta))
-                $info["techno"] = $meta["techno"][0];
-            
-            if(array_key_exists("movie_path", $meta))
-                $info["movie_path"] = $meta["movie_path"][0];
-
-            if(count($attached_images) > 0)
-                $info['image'] = $attached_images;                
-         
-            $displayble_posts[] = $info;
-            
-            }   
+        if($current_cat[0] == $selected_category){ // Add the selected post to the posts list if matching the desired category        
+             $games[] = get_single_game_data($p->ID);  
+        }   
     }
-
+        
     // Building HTML
-    foreach($displayble_posts as $d){
+    foreach($games as $d){
         $html .= '<div class="row" style="color:white">';
         $html .= '<div class="col">';
         $html .= 'Titre : '. $d["name"];
@@ -136,10 +160,16 @@ function custom_get_games_data()
         $html .= '</br>Download count : '.$d['dl_count'];
         $html .= '</br>Technology used : '.$d['techno'];
         $html .= '</br>';
-        foreach($d['image'] as $img){
-            $html .= '<img src="'. $img->guid .'"  height="150" width="150">';
-        }        
-        $html .= '</div>';
+
+        if(array_key_exists('logo', $d))
+                $html .= '<img src="'. $d['logo']->guid .'"  height="150" width="150">';  
+
+        if(array_key_exists('image', $d)){
+            foreach($d['image'] as $img){
+                $html .= '<img src="'. $img->guid .'"  height="150" width="150">';
+            }      
+        }  
+        $html .= ' </br></br></div>';
         $html .= '</div>';
     }
     
