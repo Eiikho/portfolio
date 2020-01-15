@@ -57,67 +57,71 @@ function my_script_function()
 }
 
 //shortcode perso
-add_shortcode('ma_fonction', 'ma_fonction_function');
-function ma_fonction_function()
-{    
-    $selected_category = -1; // Desired category initialisation
-    $categories = get_categories(); // Getting all categories from DB
-    $desired_post = array(); // Array of desired post matching category
-    $posts = get_posts(); // get all posts from DB
-    $displayble_posts = array();
-    
 
-    foreach($categories as $c) // Browse through all categories to find the one called "Jeux"
-    {
-       if($c->name == "Jeux"){
-            $selected_category = $c->cat_ID; // Set the desired category ID from name
-         }
-    }
+//add_shortcode('increment_dl_count', 'custom_increment_dl_count');
+// Function to increment dl count
+function custom_increment_dl_count($post_id)
+{
+    $meta_key = "dl_count";
+    $post_id = 667; // Comment on passe ce param comme arg de la fonction, du lien ou whatever ??????????????
+    $dl_count = get_post_meta($post_id, $meta_key);
+
+    update_post_meta($post_id, $meta_key, (String)((int)$dl_count[0] + 1));
+}
+
+// Shortcode to get all games data
+add_shortcode('get_games_data', 'custom_get_games_data');
+function custom_get_games_data()
+{    
+    $selected_category = 4; // Desired category initialisation
+    $categories = get_categories(); // Getting all categories from DB
+    $posts = get_posts(); // get all posts from DB
+    $displayble_posts = array(); // returned array populated with selected posts    
     
     foreach($posts as $p){
         $current_cat = wp_get_post_categories($p->ID);
-        if($current_cat[0] == $selected_category) // Add the selected post the posts list if matching the desired category
-            $desired_post[] = $p;
-        
-    }
-
-    // Populate an array of data for each game found 
-    foreach($desired_post as $current_post){
-        $info = array( 'name' => $current_post->post_title, 'desc' => $current_post->post_content );
-        $meta = get_post_meta($current_post->ID);
-
-        if(array_key_exists("game_playable", $meta))
-            $info["game_playable"] = $meta["game_playable"][0];
-
-        if(array_key_exists("release_date", $meta))
-            $info["release_date"] = $meta["release_date"][0];
-
-         if(array_key_exists("dev_time", $meta))
-            $info["dev_time"] = $meta["dev_time"][0];
-
-        if(array_key_exists("lifetime", $meta))
-            $info["lifetime"] = $meta["lifetime"][0];
-
-        if(array_key_exists("style", $meta))
-            $info["style"] = $meta["style"][0];
-
-        if(array_key_exists("dl_count", $meta))
-            $info["dl_count"] = $meta["dl_count"][0];
-
-        if(array_key_exists("techno", $meta))
-            $info["techno"] = $meta["techno"][0];
-        
-        if(array_key_exists("movie_path", $meta))
-            $info["movie_path"] = $meta["movie_path"][0];
-
-        if(array_key_exists("image_path", $meta))
-            $info["image_path"] = $meta["image_path"];
+        if($current_cat[0] == $selected_category){ // Add the selected post the posts list if matching the desired category
             
+            // Get all image related to current post
+            $args = array('post_type' => 'attachment', 'post_mime_type' => 'image', 'post_parent' => $p->ID); 
+            $attached_images = get_posts( $args );
+
+            // building data array with selected results
+            $info = array( 'name' => $p->post_title, 'desc' => $p->post_content );
+            $meta = get_post_meta($p->ID);
+
+            if(array_key_exists("game_playable", $meta))
+                $info["game_playable"] = $meta["game_playable"][0];
+
+            if(array_key_exists("release_date", $meta))
+                $info["release_date"] = $meta["release_date"][0];
+
+            if(array_key_exists("dev_time", $meta))
+                $info["dev_time"] = $meta["dev_time"][0];
+
+            if(array_key_exists("lifetime", $meta))
+                $info["lifetime"] = $meta["lifetime"][0];
+
+            if(array_key_exists("style", $meta))
+                $info["style"] = $meta["style"][0];
+
+            if(array_key_exists("dl_count", $meta))
+                $info["dl_count"] = $meta["dl_count"][0];
+
+            if(array_key_exists("techno", $meta))
+                $info["techno"] = $meta["techno"][0];
+            
+            if(array_key_exists("movie_path", $meta))
+                $info["movie_path"] = $meta["movie_path"][0];
+
+            if(count($attached_images) > 0)
+                $info['image'] = $attached_images;                
          
-        $displayble_posts[] = $info;
-        
+            $displayble_posts[] = $info;
+            
+            }   
     }
-   
+
     // Building HTML
     foreach($a as $d){
         $html .= '<div class="row" style="color:white">';
@@ -132,8 +136,8 @@ function ma_fonction_function()
         $html .= '</br>Download count : '.$d['dl_count'];
         $html .= '</br>Technology used : '.$d['techno'];
         $html .= '</br>';
-        foreach($d['image_path'] as $img){
-            $html .= '<img src="http://localhost/remi-adriano/portfolio/wp-content/uploads/2020/01/game-image/'. $img .'"  height="150" width="150">';
+        foreach($d['image'] as $img){
+            $html .= '<img src="'. $img->guid .'"  height="150" width="150">';
         }        
         $html .= '</div>';
         $html .= '</div>';
