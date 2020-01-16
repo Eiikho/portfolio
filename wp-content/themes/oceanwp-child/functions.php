@@ -29,23 +29,25 @@ add_action('wp_enqueue_scripts', 'child_theme_configurator_css', 10);
 /**
  * Register Bootstrap CSS
  */
-if ( !function_exists( 'bootstrap_style' ) ) {
-	function bootstrap_style() {
-		wp_enqueue_style( 'bootstrap', 'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css', array(), '4.4.1' );
-	}
-	add_action( 'wp_enqueue_scripts', 'bootstrap_style' );
+if (!function_exists('bootstrap_style')) {
+    function bootstrap_style()
+    {
+        wp_enqueue_style('bootstrap', 'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css', array(), '4.4.1');
+    }
+    add_action('wp_enqueue_scripts', 'bootstrap_style');
 }
 
 /**
  * Register Bootstrap JS with jquery
  */
-if ( !function_exists( 'bootstrap_js' ) ) {
-	function bootstrap_js() {
-		wp_enqueue_script( 'bootstrap-popper', 'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/esm/popper.js', array( 'jquery' ), '1.16.0', true );
-		wp_enqueue_script( 'bootstrap', 'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js', array( 'jquery' ), '4.4.1', true );
-	}
+if (!function_exists('bootstrap_js')) {
+    function bootstrap_js()
+    {
+        wp_enqueue_script('bootstrap-popper', 'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/esm/popper.js', array('jquery'), '1.16.0', true);
+        wp_enqueue_script('bootstrap', 'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js', array('jquery'), '4.4.1', true);
+    }
 
-	add_action( 'wp_enqueue_scripts', 'bootstrap_js' );
+    add_action('wp_enqueue_scripts', 'bootstrap_js');
 }
 
 //add personal JS files
@@ -53,96 +55,182 @@ add_action('wp_enqueue_scripts', 'my_script_function');
 function my_script_function()
 {
     wp_enqueue_script('mon-script', get_stylesheet_directory_uri() . '/js/mon-script.js', array('jquery'), '1.0', true);
-    wp_localize_script( 'mon-script', 'frontendajax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' )));
+    wp_localize_script('mon-script', 'frontendajax', array('ajaxurl' => admin_url('admin-ajax.php')));
 }
 
-//shortcode perso
-
-//add_shortcode('increment_dl_count', 'custom_increment_dl_count');
-// Function to increment dl count
-function custom_increment_dl_count($post_id)
+// Function to increment dl count !
+function increment_dl_count($post_id)
 {
     $meta_key = "dl_count";
-    $post_id = 667; // Comment on passe ce param comme arg de la fonction, du lien ou whatever ??????????????
     $dl_count = get_post_meta($post_id, $meta_key);
 
-    update_post_meta($post_id, $meta_key, (String)((int)$dl_count[0] + 1));
+    return update_post_meta($post_id, $meta_key, (string) ((int) $dl_count[0] + 1));
+}
+
+
+// get infos for a single game inside DB
+function get_single_game_data($post_id)
+{
+    $logo_id = -1;
+    $p = get_post($post_id);
+
+    // Get all image related to current post
+    $args = array('post_type' => 'attachment', 'post_mime_type' => 'image', 'post_parent' => $p->ID);
+    $attached_images = get_posts($args);
+
+    // building data array with selected results
+    $info = array('name' => $p->post_title, 'desc' => $p->post_content);
+    $meta = get_post_meta($p->ID);
+
+    if (array_key_exists("game_playable", $meta))
+        $info["game_playable"] = $meta["game_playable"][0];
+
+    if (array_key_exists("release_date", $meta))
+        $info["release_date"] = $meta["release_date"][0];
+
+    if (array_key_exists("dev_time", $meta))
+        $info["dev_time"] = $meta["dev_time"][0];
+
+    if (array_key_exists("lifetime", $meta))
+        $info["lifetime"] = $meta["lifetime"][0];
+
+    if (array_key_exists("style", $meta))
+        $info["style"] = $meta["style"][0];
+
+    if (array_key_exists("dl_count", $meta))
+        $info["dl_count"] = $meta["dl_count"][0];
+
+    if (array_key_exists("techno", $meta))
+        $info["techno"] = $meta["techno"][0];
+
+    if (array_key_exists("movie_path", $meta))
+        $info["movie_path"] = $meta["movie_path"][0];
+
+    if (array_key_exists("ocean_custom_logo", $meta)) {
+        $logo_id = (int) $meta["ocean_custom_logo"][0];
+    }
+
+    if (array_key_exists("ocean_link_format", $meta)) {
+        $info["download_url"] = $meta["ocean_link_format"][0];
+    } else {
+        $info["download_url"] = "#";
+    }
+
+    // If post has images, this routine checks if one of them is set as the default logo (A.K.A main image). 
+    // If so, this main image is defined in 'logo' when other images are defined in 'image'. 
+
+    if (count($attached_images) > 0) {
+        if ($logo_id > -1) {
+            foreach ($attached_images as $img) {
+                if ((int) $img->ID == (int) $logo_id) {
+                    $info['logo'] = $img;
+                } else {
+                    $info['image'][] = $img;
+                }
+            }
+        } else {
+            $info['image'] = $attached_images;
+        }
+    }
+    return $info;
 }
 
 // Shortcode to get all games data
-add_shortcode('get_games_data', 'custom_get_games_data');
-function custom_get_games_data()
-{    
-    $selected_category = 4; // Desired category initialisation
-    $categories = get_categories(); // Getting all categories from DB
-    $posts = get_posts(); // get all posts from DB
-    $displayble_posts = array(); // returned array populated with selected posts    
-    
-    foreach($posts as $p){
+add_shortcode('get_all_games_data', 'get_all_games_data_function');
+function get_all_games_data_function()
+{
+    $selected_category = 4; // Desired category initialisation ; 4 = Games
+    $posts = get_posts(array('orderby' => 'date', 'order' => "ASC")); // get all posts from DB
+    $html = "";
+
+    $cpt = 0;
+    foreach ($posts as $p) {
         $current_cat = wp_get_post_categories($p->ID);
-        if($current_cat[0] == $selected_category){ // Add the selected post the posts list if matching the desired category
-            
-            // Get all image related to current post
-            $args = array('post_type' => 'attachment', 'post_mime_type' => 'image', 'post_parent' => $p->ID); 
-            $attached_images = get_posts( $args );
+        if (in_array($selected_category, $current_cat)) {
+            $game = get_single_game_data($p->ID);
 
-            // building data array with selected results
-            $info = array( 'name' => $p->post_title, 'desc' => $p->post_content );
-            $meta = get_post_meta($p->ID);
+            $attached_img_src = wp_get_attachment_image_src(get_post_thumbnail_id($p->ID), 'medium')[0];
+            $desc = (strlen($game['desc']) > 350 ? (substr($game['desc'], 0, 350) . '...') : $game['desc']);
+            $dl_count_txt = "";
+            if ($game['dl_count'] > 0) {
+                $dl_count_txt .= '<span class="nb-dl">Téléchargé <span class="nb-dl-nb">' . $game['dl_count'] . '</span> fois</span>';
+            }
 
-            if(array_key_exists("game_playable", $meta))
-                $info["game_playable"] = $meta["game_playable"][0];
+            $html .= '<div class="row mx-2 my-4 jeu-details" data-post-id="' . $p->ID . '">';
+            $html .= '    <div class="col-md-4 p-0 text-center jeu-img">';
+            //slider
+            $html .= '<div id="slider_img_game_' . $cpt . '" class="carousel slide" data-ride="carousel">
+                <ol class="carousel-indicators">';
+            if (array_key_exists('image', $game)) {
+                $html .= '<li data-target="#slider_img_game_' . $cpt . '" data-slide-to="0" class="active"></li>';
+                $cpt_slides = 1;
+                foreach ($game['image'] as $img) {
+                    $html .= '<li data-target="#slider_img_game_' . $cpt . '" data-slide-to="' . $cpt_slides . '"></li>';
+                    $cpt_slides++;
+                }
+            }
+            $html .= '</ol>
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="' . $attached_img_src . '">
+                    </div>';
+            if (array_key_exists('image', $game)) {
+                foreach ($game['image'] as $img) {
+                    $html .= '<div class="carousel-item">';
+                    $html .= '<img src="' . $img->guid . '">';
+                    $html .= '</div>';
+                }
+            }
+            $html .= '    </div>
+                <a class="carousel-control-prev" href="#slider_img_game_' . $cpt . '" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#slider_img_game_' . $cpt . '" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </div>';
+            //- end slider
+            $html .= '      <a href="' . $game['download_url'] . '" class="btn btn-primary my-3 mx-2 download-btn" download>
+                                <i class="fas fa-download"></i> Télécharger
+                                ' . $dl_count_txt . '
+                            </a>';
+            $html .= '    </div>';
+            $html .= '    <div class="col-md-8 py-3 jeu-content">';
+            $html .= '          <a href="' . get_permalink($p->ID) . '" class="btn btn-secondary my-3 mx-2 voir-jeu"><i class="fas fa-eye"></i> Voir le jeu</a>';
+            $html .= '        <h2 class="pb-3">' . $game["name"] . '</h2>';
+            $html .= '        <h3 class="pb-2">Description</h3>';
+            $html .= '        <div class="description-jeu pl-3">' . $desc . '</div>';
+            $html .= '    </div>';
+            $html .= '</div>';
 
-            if(array_key_exists("release_date", $meta))
-                $info["release_date"] = $meta["release_date"][0];
+            /*
+            $html .= '<div class="row" style="color:white">';
+            $html .= '<div class="col">';
+            $html .= 'Titre : ' . $game["name"];
+            $html .= '</br> Description : ' . $game['desc'];
+            $html .= '</br> Devices : ' . $game['game_playable'];
+            $html .= '</br>Release date : ' . $game['release_date'];
+            $html .= '</br>Development time : ' . $game['dev_time'];
+            $html .= '</br>Lifetime : ' . $game['lifetime'];
+            $html .= '</br>Style : ' . $game['style'];
+            $html .= '</br>Download count : ' . $game['dl_count'];
+            $html .= '</br>Technology used : ' . $game['techno'];
+            $html .= '</br>';
+            if (array_key_exists('logo', $game))
+                $html .= '<img src="' . $game['logo']->guid . '"  height="150" width="150">';
 
-            if(array_key_exists("dev_time", $meta))
-                $info["dev_time"] = $meta["dev_time"][0];
-
-            if(array_key_exists("lifetime", $meta))
-                $info["lifetime"] = $meta["lifetime"][0];
-
-            if(array_key_exists("style", $meta))
-                $info["style"] = $meta["style"][0];
-
-            if(array_key_exists("dl_count", $meta))
-                $info["dl_count"] = $meta["dl_count"][0];
-
-            if(array_key_exists("techno", $meta))
-                $info["techno"] = $meta["techno"][0];
-            
-            if(array_key_exists("movie_path", $meta))
-                $info["movie_path"] = $meta["movie_path"][0];
-
-            if(count($attached_images) > 0)
-                $info['image'] = $attached_images;                
-         
-            $displayble_posts[] = $info;
-            
-            }   
+            if (array_key_exists('image', $game)) {
+                foreach ($game['image'] as $img) {
+                    $html .= '<img src="' . $img->guid . '"  height="150" width="150">';
+                }
+            }
+            $html .= ' </br></br></div>';
+            $html .= '</div>';*/
+            $cpt++;
+        }
     }
-
-    // Building HTML
-    foreach($a as $d){
-        $html .= '<div class="row" style="color:white">';
-        $html .= '<div class="col">';
-        $html .= 'Titre : '. $d["name"];
-        $html .= '</br> Description : '. $d['desc'];
-        $html .= '</br> Devices : '. $d['game_playable'];
-        $html .= '</br>Release date : '.$d['release_date'];
-        $html .= '</br>Development time : '.$d['dev_time'];
-        $html .= '</br>Lifetime : '.$d['lifetime'];
-        $html .= '</br>Style : '.$d['style'];
-        $html .= '</br>Download count : '.$d['dl_count'];
-        $html .= '</br>Technology used : '.$d['techno'];
-        $html .= '</br>';
-        foreach($d['image'] as $img){
-            $html .= '<img src="'. $img->guid .'"  height="150" width="150">';
-        }        
-        $html .= '</div>';
-        $html .= '</div>';
-    }
-    
 
     return $html;
 }
@@ -187,5 +275,32 @@ function open_language_modal()
     $resultat['html'] = $html;
 
     echo json_encode($resultat);
+    die;
+}
+// # GAME DL ++
+add_action("wp_ajax_increment_dl_count_post", "increment_dl_count_post");
+add_action("wp_ajax_nopriv_increment_dl_count_post", "increment_dl_count_post");
+function increment_dl_count_post()
+{
+    $res = array();
+    $post_id = isset($_POST['post_id']) ? $_POST['post_id'] : null;
+    $href = isset($_POST['href']) ? $_POST['href'] : null;
+
+    if (!$post_id) {
+        $res['error'] = "Pas d'id du jeu";
+    } else {
+        if ($href && $href != '' && $href != '#') {
+            if (!increment_dl_count($post_id)) {
+                $res['error'] = "Erreur lors de l'incrémentation du nombre de DL du jeu";
+            } else {
+                $res['success'] = "Incrémentation réussie";
+                $res['nb_dl'] = get_post_meta($post_id, 'dl_count');
+            }
+        } else {
+            $res['error'] = "Aucun fichier à télécharger";
+        }
+    }
+
+    echo json_encode($res);
     die;
 }

@@ -50,4 +50,27 @@ jQuery(document).ready(function ($) {
             $('#lang_modal').modal('show');
         }
     });
+    $('.download-btn').on('click', function () {
+        var parent_div =  $(this).parent().parent();
+        var datas = {
+            'action': 'increment_dl_count_post',
+            'post_id': parent_div.data('post-id'),
+            'href': $(this).attr('href'),
+        };
+        jQuery.ajax({
+            url: frontendajax.ajaxurl,
+            type: 'POST',
+            data: datas,
+            dataType: "text",
+            success: function (result) {
+                var resultat = JSON.parse(result);
+                if(resultat['success'] && resultat['nb_dl']) {
+                    parent_div.find('.nb-dl-nb').html(resultat['nb_dl']);
+                }
+                else {
+                    console.log('Erreur : ' + resultat['error']);
+                }
+            }
+        });
+    });
 });
