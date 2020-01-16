@@ -67,13 +67,15 @@ if (!defined('ABSPATH')) {
                         <?php
                         if (array_key_exists('image', $game)) {
                             $active = false;
+                            $cpt_slides = 0;
                             /*if ($game['movie_path']) {
                                 echo '<li data-target="#slider_img_game_single" data-slide-to="0" class="active">
                                 <iframe src="' . $game['movie_path'] . '" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                                 </li>';
                                 $active = true;
+                                $cpt_slides++;
                             }*/
-                            $cpt_slides = 1;
+                            
                             foreach ($game['image'] as $img) {
                                 if (!$active) {
                                     $active = true;
@@ -164,7 +166,7 @@ if (!defined('ABSPATH')) {
         </div>
         <div class="may-like m-4">
             <h3 class="theme-heading related-posts-title">
-                <span class="text">You Might Also Like</span>
+                <span class="text"><?php echo __('Other games'); ?></span>
             </h3>
             <div class="row m-4">
                 <?php

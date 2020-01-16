@@ -65,7 +65,7 @@ jQuery(document).ready(function ($) {
             success: function (result) {
                 var resultat = JSON.parse(result);
                 if(resultat['success'] && resultat['nb_dl']) {
-                    parent_div.find('.nb-dl-nb').html(resultat['nb_dl']);
+                    //parent_div.find('.nb-dl-nb').html(resultat['nb_dl']);
                 }
                 else {
                     console.log('Erreur : ' + resultat['error']);
