@@ -71,7 +71,6 @@ function increment_dl_count($post_id)
 // get infos for a single game inside DB
 function get_single_game_data($post_id)
 {
-    $logo_id = -1;
     $p = get_post($post_id);
 
     // Get all image related to current post
@@ -106,31 +105,14 @@ function get_single_game_data($post_id)
     if (array_key_exists("movie_path", $meta))
         $info["movie_path"] = $meta["movie_path"][0];
 
-    if (array_key_exists("ocean_custom_logo", $meta)) {
-        $logo_id = (int) $meta["ocean_custom_logo"][0];
-    }
-
     if (array_key_exists("ocean_link_format", $meta)) {
         $info["download_url"] = $meta["ocean_link_format"][0];
     } else {
         $info["download_url"] = "#";
     }
 
-    // If post has images, this routine checks if one of them is set as the default logo (A.K.A main image). 
-    // If so, this main image is defined in 'logo' when other images are defined in 'image'. 
-
     if (count($attached_images) > 0) {
-        if ($logo_id > -1) {
-            foreach ($attached_images as $img) {
-                if ((int) $img->ID == (int) $logo_id) {
-                    $info['logo'] = $img;
-                } else {
-                    $info['image'][] = $img;
-                }
-            }
-        } else {
             $info['image'] = $attached_images;
-        }
     }
     return $info;
 }
@@ -205,29 +187,6 @@ function get_all_games_data_function()
             $html .= '    </div>';
             $html .= '</div>';
 
-            /*
-            $html .= '<div class="row" style="color:white">';
-            $html .= '<div class="col">';
-            $html .= 'Titre : ' . $game["name"];
-            $html .= '</br> Description : ' . $game['desc'];
-            $html .= '</br> Devices : ' . $game['game_playable'];
-            $html .= '</br>Release date : ' . $game['release_date'];
-            $html .= '</br>Development time : ' . $game['dev_time'];
-            $html .= '</br>Lifetime : ' . $game['lifetime'];
-            $html .= '</br>Style : ' . $game['style'];
-            $html .= '</br>Download count : ' . $game['dl_count'];
-            $html .= '</br>Technology used : ' . $game['techno'];
-            $html .= '</br>';
-            if (array_key_exists('logo', $game))
-                $html .= '<img src="' . $game['logo']->guid . '"  height="150" width="150">';
-
-            if (array_key_exists('image', $game)) {
-                foreach ($game['image'] as $img) {
-                    $html .= '<img src="' . $img->guid . '"  height="150" width="150">';
-                }
-            }
-            $html .= ' </br></br></div>';
-            $html .= '</div>';*/
             $cpt++;
         }
     }
