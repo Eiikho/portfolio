@@ -135,7 +135,7 @@ function get_all_games_data_function()
             $desc = (strlen($game['desc']) > 350 ? (substr($game['desc'], 0, 350) . '...') : $game['desc']);
             $dl_count_txt = "";
             if ($game['dl_count'] > 0) {
-                $dl_count_txt .= '<span class="nb-dl">Téléchargé <span class="nb-dl-nb">' . $game['dl_count'] . '</span> fois</span>';
+                $dl_count_txt .= '<span class="nb-dl">Downloaded <span class="nb-dl-nb">' . $game['dl_count'] . '</span> times</span>';
             }
 
             $html .= '<div class="row mx-2 my-4 jeu-details" data-post-id="' . $p->ID . '">';
@@ -175,12 +175,12 @@ function get_all_games_data_function()
             </div>';
             //- end slider
             $html .= '      <a href="' . $game['download_url'] . '" class="btn btn-primary my-3 mx-2 download-btn" download>
-                                <i class="fas fa-download"></i> Télécharger
+                                <i class="fas fa-download"></i> Download
                                 ' . $dl_count_txt . '
                             </a>';
             $html .= '    </div>';
             $html .= '    <div class="col-md-8 py-3 jeu-content">';
-            $html .= '          <a href="' . get_permalink($p->ID) . '" class="btn btn-secondary my-3 mx-2 voir-jeu"><i class="fas fa-eye"></i> Voir le jeu</a>';
+            $html .= '          <a href="' . get_permalink($p->ID) . '" class="btn btn-secondary my-3 mx-2 voir-jeu"><i class="fas fa-eye"></i> More details</a>';
             $html .= '        <h2 class="pb-3">' . $game["name"] . '</h2>';
             $html .= '        <h3 class="pb-2">Description</h3>';
             $html .= '        <div class="description-jeu pl-3">' . $desc . '</div>';
