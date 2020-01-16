@@ -119,7 +119,7 @@ Updated: 2020-01-14 11:22:18
 	background: #0000006b;
 }
 
-.jeu-img a.btn {
+a.btn.btn-primary {
 	background-color: #E9522A;
 	border: none;
 	border-radius: 0;
@@ -127,7 +127,7 @@ Updated: 2020-01-14 11:22:18
 	font-size: 16px;
 }
 
-.jeu-img a.btn:hover {
+a.btn.btn-primary:hover {
 	background-color: #e9522aa6;
 	transform: scale(0.9);
 }
@@ -165,6 +165,129 @@ Updated: 2020-01-14 11:22:18
 
 .carousel-indicators li.active {
 	background-color: #32afff;
+}
+
+#slider_img_game_single .carousel-indicators {
+	margin: 10px 0 0;
+	overflow: auto;
+	position: static;
+	text-align: left;
+	white-space: nowrap;
+	width: 100%;
+	overflow-x: auto;
+}
+
+#slider_img_game_single .carousel-indicators li {
+	background-color: transparent;
+	-webkit-border-radius: 0;
+	border-radius: 0;
+	display: flex;
+	height: auto;
+	margin: 0 !important;
+	width: 20%;
+}
+
+#slider_img_game_single .carousel-indicators li img {
+	display: block;
+	opacity: 0.5;
+}
+
+#slider_img_game_single .carousel-indicators li.active img {
+	opacity: 1;
+}
+
+#slider_img_game_single .carousel-indicators li:hover img {
+	opacity: 0.75;
+}
+
+.game-details {
+	background: #516f81;
+}
+
+.game-details h2 {
+	color: #fff;
+	font-size: 30px;
+	letter-spacing: 3px;
+	position: absolute;
+	bottom: 0;
+	left: 10px;
+	z-index: 2;
+}
+
+.game-details .game-desc {
+	font-size: 13px;
+	line-height: 15px;
+	color: #e0e0e0;
+}
+
+.game-other-info .row .col:first-child {
+	font-size: 11px;
+	color: #dbdbdb;
+}
+
+.game-other-info .row .col:not(:first-child) {
+	font-size: 11px;
+	color: #9bdef8;
+}
+
+#slider_img_game_single .carousel-item img {
+	min-height: 350px;
+}
+
+#game_details {
+	max-width: 990px;
+	margin: 30px auto;
+}
+
+.other-game {
+	position: relative;
+	max-width: 300px;
+	overflow: hidden;
+}
+
+.other-game img {
+	transition: 0.8s all ease-in-out;
+}
+
+.other-game:hover img {
+	transform: scale(1.1) rotate(2deg);
+}
+
+.other-game h3 {
+	position: absolute;
+	bottom: 10px;
+	left: 50%;
+	transform: translate(-50%, 0);
+	font-size: 25px;
+	z-index: 2;
+}
+
+.overlay-game {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-image: linear-gradient(0deg, #000000d1, transparent);
+	z-index: 1;
+}
+
+.game-details-head-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(0deg, black, transparent);
+	z-index: 1;
+}
+
+.post-game-name {
+	color: #fff;
+	font-size: 30px;
+	text-transform: uppercase;
+	font-weight: 600;
+	letter-spacing: 3px;
 }
 
 @media only screen and (max-width: 959px) {
